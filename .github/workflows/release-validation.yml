@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout del codigo
-        uses: action/checkout@v4  # Accion oficial para descargar el repo
+        uses: actions/checkout@v4  # Accion oficial para descargar el repo
 
       - name: Configurar Python
         uses: action/setup-python@v4
