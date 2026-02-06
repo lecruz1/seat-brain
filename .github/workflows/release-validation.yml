@@ -1,0 +1,39 @@
+name: Seat Brain Release validation
+
+#Control para disparar el pipeline
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ 'v*' ]  #Se dispara al crear los tags
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  #Utilizar un servidor Linux en la nube de Github
+
+    steps:
+      - name: Checkout del codigo
+        uses: action/checkout@v4  # Accion oficial para descargar el repo
+
+      - name: Configurar Python
+        uses: action/setup-python@v4
+        with:
+          python-version: '3.14.2'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          # Si hubieran tests aqui se instalaria pytest
+
+      - name: Simular validacion de firmware
+        run: |
+          echo "Iniciando validacion del cerebro del asiento..."
+          python src/seat_controller.py
+          echo "Validacion completada con éxito."
+
+      - name: Simular Reporte de Release
+        if: startsWith(github.ref, 'refs/tags/v') #Solo si es un TAG
+        run: |
+          echo "Generando manifiesto para el Release: ${{ github.ref_name }}"
+          echo '{"version": "${{ github.ref_name }}", "status": "validated"}' > manifest.json
