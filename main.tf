@@ -24,8 +24,13 @@ resource "aws_s3_bucket" "seat_release_bucket_arrole1" {
 }
 
 # Bloqueo del acceso público por seguridad
+resource "aws_s3_bucket" "seat_release_bucket" {
+  bucket = "tu-nombre-unico-aqui" 
+}
+
 resource "aws_s3_bucket_public_access_block" "security_policy" {
-  bucket = aws_s3_bucket_public_access_block.id
+
+  bucket = aws_s3_bucket.seat_release_bucket.id
 
   block_public_acls       = true
   block_public_policy     = true
