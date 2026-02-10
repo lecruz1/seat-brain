@@ -1,0 +1,13 @@
+# Ignorar carpetas de Terraform
+.terraform/
+
+# Ignorar archivos de estado local (porque ya usamos S3)
+*.tfstate
+*.tfstate.backup
+
+# Ignorar archivos de variables sensibles (por si creas uno luego)
+*.tfvars
+*.tfvars.json
+
+# Ignorar logs
+*.log
