@@ -1,20 +1,26 @@
-# 1. Definicion del proveedor (aws)
-terraform{
-    required_providers {
-      aws = {
-        source = "hashicorp/aws"
-        version = "~> 5.0"
-      }
+# 1. Definicion del proveedor y Backend
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
     }
+  }
+
+  # ESTO ES LO QUE CONECTA CON GITHUB ACTIONS
+  backend "s3" {
+    bucket = "hella-seat-brains-reports-leonardo-arroyo"
+    key    = "terraform/state"
+    region = "us-east-2"
+  }
 }
 
 provider "aws" {
-    region = "us-east-2"
+  region = "us-east-2"
 }
 
-# 2. Creacion del bucket para los reportes de asiento
-resource "aws_s3_bucket" "seat_release_bucket_arrole1" {
-  # Recordatorio: los nombres de los buckets deben ser unicos en todo el mundo
+# 2. Creacion del bucket (Usamos el nombre que ya creaste ayer)
+resource "aws_s3_bucket" "seat_release_bucket" {
   bucket = "hella-seat-brains-reports-leonardo-arroyo"
 
   tags = {
@@ -23,13 +29,8 @@ resource "aws_s3_bucket" "seat_release_bucket_arrole1" {
   }
 }
 
-# Bloqueo del acceso público por seguridad
-resource "aws_s3_bucket" "seat_release_bucket" {
-  bucket = "tu-nombre-unico-aqui" 
-}
-
+# 3. Bloqueo del acceso público por seguridad (Referenciado correctamente)
 resource "aws_s3_bucket_public_access_block" "security_policy" {
-
   bucket = aws_s3_bucket.seat_release_bucket.id
 
   block_public_acls       = true
