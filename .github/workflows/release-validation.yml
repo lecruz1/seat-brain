@@ -65,7 +65,7 @@ jobs:
       - name: Debug File Path
         run: |
           pwd
-          ls R
+          ls -R
 
       - name: Run Health Check
         run: python seat_monitor.py
