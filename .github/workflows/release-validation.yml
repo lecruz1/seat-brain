@@ -64,11 +64,20 @@ jobs:
 
       - name: Debug File Path
         run: |
+          echo "Searching for files in the repositorie..."
           pwd
           ls -R
 
       - name: Run Health Check
-        run: python seat_monitor.py
+        run: |
+          if [ -f src/seat_controller.py ]; then
+            python src/seat_controller.py
+          elif [ -f seat_controller.py ]; then
+            phyton seat_controller.py
+          else
+            echo "Error: seat_controller.py not found on the src"
+            exit 1
+          fi
 
       - name: Upload Incident Report to S3
         if: always() # Esto asegura que se corra incluso si falla lo anterior
