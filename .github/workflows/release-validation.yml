@@ -43,7 +43,7 @@ jobs:
     needs: build-and-test    #Solo corre si el job 1 fue exitoso
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Terraform
@@ -61,6 +61,10 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
+
+      - name: Debug File Path
+        run: |
+          ls R
 
       - name: Run Health Check
         run: python seat_monitor.py
