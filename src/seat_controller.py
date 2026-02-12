@@ -24,3 +24,16 @@ try:
     raise ConnectionError("Database connection timed out after 30s")
 except Exception as e:
     generate_incident_report(str(e), type(e).__name__)
+
+# src/seat_monitor.py
+try:
+    print("Iniciando monitoreo...")
+    # Forzamos un error de división por cero o una excepción manual
+    raise Exception("Simulated System Failure for Amdocs Demo")
+except Exception as e:
+    # AQUÍ es donde se crea el JSON
+    import json
+    report = {"error": str(e), "status": "critical"}
+    with open("incident_report.json", "w") as f:
+        json.dump(report, f)
+    print("Archivo incident_report.json creado con éxito")
