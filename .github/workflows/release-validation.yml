@@ -82,9 +82,12 @@ jobs:
       - name: Upload Incident Report to S3
         if: always() # Esto asegura que se corra incluso si falla lo anterior
         run: |
-          if [ -f incident_report.json ]; then
-            echo "Incident detected. Uploading report to S3..."
-            aws s3 cp incident_report.json s3://hella-seat-brains-reports-leonardo-arroyo/incidents/$(date +%Y-%m-%d)/incident_report.json
+         # Buscamos el archivo en todo el espacio de trabajo
+          REPORT_PATH=$(find . -name "incident_report.json" | head -n 1)
+          
+          if [ -n "$REPORT_PATH" ]; then
+            echo "Reporte encontrado en: $REPORT_PATH. Subiendo a S3..."
+            aws s3 cp $REPORT_PATH s3://hella-seat-brains-reports-leonardo-arroyo/incidents/$(date +%Y-%m-%d)/incident_report.json
           else
-            echo "No incident detected."
+            echo "El archivo incident_report.json no existe. ¿El script falló como esperábamos?"
           fi
