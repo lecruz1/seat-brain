@@ -64,6 +64,7 @@ jobs:
 
       - name: Debug File Path
         run: |
+          pwd
           ls R
 
       - name: Run Health Check
