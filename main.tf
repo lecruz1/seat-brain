@@ -20,7 +20,7 @@ provider "aws" {
 }
 
 # 1. Declaración del Bucket
-resource "aws_s3_bucket" "reports_bucket" {  # <--- Este es el nombre interno
+resource "aws_s3_bucket" "seat_release_bucket" {  # <--- Este es el nombre interno
   bucket = var.bucket_name
 }
 
