@@ -19,23 +19,33 @@ provider "aws" {
   region = var.aws_region
 }
 
-# 1. Declaración del Bucket
-resource "aws_s3_bucket" "seat_release_bucket" {  # <--- Este es el nombre interno
+# 1. El Bucket (Asegúrate de que el nombre interno sea seat_release_bucket)
+resource "aws_s3_bucket" "seat_release_bucket" {
   bucket = var.bucket_name
 }
 
-# 2. Bloqueo de acceso público (Ajusta el nombre aquí)
+# 2. El Lifecycle (Cámbialo para que use seat_release_bucket)
 resource "aws_s3_bucket_lifecycle_configuration" "cleanup_reports" {
-  bucket = aws_s3_bucket.reports_bucket.id
+  bucket = aws_s3_bucket.seat_release_bucket.id
 
   rule {
     id     = "auto-delete-old-reports"
     status = "Enabled"
 
-    filter {}  # <--- AGREGA ESTO para que aplique a todo el bucket
+    filter {}
 
     expiration {
       days = 7
     }
   }
+}
+
+# 3. La seguridad (Asegúrate de que también use seat_release_bucket)
+resource "aws_s3_bucket_public_access_block" "security_policy" {
+  bucket = aws_s3_bucket.seat_release_bucket.id
+  
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
