@@ -19,31 +19,20 @@ provider "aws" {
   region = var.aws_region
 }
 
-resource "aws_s3_bucket" "reports_bucket" {
+# 1. Declaración del Bucket
+resource "aws_s3_bucket" "reports_bucket" {  # <--- Este es el nombre interno
   bucket = var.bucket_name
-
-  tags = {
-    Name        = "Reports Bucket"
-    Environment = var.environment
-  }
 }
 
-# 3. Bloqueo del acceso público por seguridad (Referenciado correctamente)
-resource "aws_s3_bucket_public_access_block" "security_policy" {
-  bucket = aws_s3_bucket.seat_release_bucket.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
+# 2. Bloqueo de acceso público (Ajusta el nombre aquí)
 resource "aws_s3_bucket_lifecycle_configuration" "cleanup_reports" {
   bucket = aws_s3_bucket.reports_bucket.id
 
   rule {
     id     = "auto-delete-old-reports"
     status = "Enabled"
+
+    filter {}  # <--- AGREGA ESTO para que aplique a todo el bucket
 
     expiration {
       days = 7
