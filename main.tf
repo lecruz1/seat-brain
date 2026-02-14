@@ -8,13 +8,13 @@ terraform {
   }
 
   # ESTO ES LO QUE CONECTA CON GITHUB ACTIONS
-  #backend "s3" {
-    #bucket         = "hella-seat-brains-reports-leonardo-arroyo"
-    #key            = "terraform.tfstate"
-    #region         = "us-east-2"
-    #dynamodb_table = "terraform-state-locking"
-   # encrypt        = true
-  #}
+  backend "s3" {
+    bucket         = "hella-seat-brains-reports-leonardo-arroyo"
+    key            = "terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "terraform-state-locking"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
