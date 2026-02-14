@@ -62,12 +62,12 @@ resource "aws_dynamodb_table" "terraform_locks" {
   }
 }
 
-import {
-  to = aws_s3_bucket.seat_release_bucket
-  id = "hella-seat-brains-reports-leonardo-arroyo"
-}
+#/import {
+  #to = aws_s3_bucket.seat_release_bucket
+  #id = "hella-seat-brains-reports-leonardo-arroyo"
+#}
 
-import {
-  to = aws_dynamodb_table.terraform_locks
-  id = "terraform-state-locking"
-}
+#import {
+  #to = aws_dynamodb_table.terraform_locks
+  #id = "terraform-state-locking"
+#}
