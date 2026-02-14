@@ -71,3 +71,10 @@ resource "aws_dynamodb_table" "terraform_locks" {
   #to = aws_dynamodb_table.terraform_locks
   #id = "terraform-state-locking"
 #}
+
+resource "aws_s3_bucket_versioning" "state_versioning" {
+  bucket = aws_s3_bucket.seat_release_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
