@@ -135,6 +135,9 @@ resource "aws_lambda_function" "reports_lambda" {
 
   layers = ["arn:aws:lambda:us-east-2:336392948345:layer:AWSSDKPandas-Python39:20"]
 
+  timeout     = 30   # Change the 3 seconds defect of AWS Lambda
+  memory_size = 256  # Increase de RAM to 256 MB
+
   environment {
     variables = {
       BUCKET_NAME = aws_s3_bucket.seat_release_bucket.id
