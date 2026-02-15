@@ -1,5 +1,5 @@
 import boto3
-import panda as pd 
+import pandas as pd 
 import os
 from datetime import datetime
 import io
