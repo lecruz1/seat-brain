@@ -133,6 +133,8 @@ resource "aws_lambda_function" "reports_lambda" {
   runtime = "python3.9"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
+  layers = ["arn:aws:lambda:us-east-2:336392948345:layer:AWSSDKPandas-Python39:20"]
+
   environment {
     variables = {
       BUCKET_NAME = aws_s3_bucket.seat_release_bucket.id
