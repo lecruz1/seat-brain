@@ -59,8 +59,12 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
 
       - name: Debug File Path
         run: |
