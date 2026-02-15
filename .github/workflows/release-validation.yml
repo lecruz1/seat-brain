@@ -1,30 +1,24 @@
 name: Seat Brain Release validation
 
-#Control para disparar el pipeline
 on:
   push:
     branches: [ "main" ]
-    tags: [ 'v*' ]  #Se dispara al crear los tags
+    tags: [ 'v*' ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
+  # JOB 1: VALIDACIÓN DE SOFTWARE
   build-and-test:
-    runs-on: ubuntu-latest  #Utilizar un servidor Linux en la nube de Github
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout del codigo
-        uses: actions/checkout@v4  # Accion oficial para descargar el repo
+        uses: actions/checkout@v4
 
       - name: Configurar Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.14.2'
-
-      - name: Instalar dependencias
-        run: |
-          python -m pip install --upgrade pip
-          # Si hubieran tests aqui se instalaria pytest
+          python-version: '3.9' # Consistencia con Lambda
 
       - name: Simular validacion de firmware
         run: |
@@ -32,15 +26,9 @@ jobs:
           python src/seat_controller.py
           echo "Validacion completada con éxito."
 
-      - name: Simular Reporte de Release
-        if: startsWith(github.ref, 'refs/tags/v') #Solo si es un TAG
-        run: |
-          echo "Generando manifiesto para el Release: ${{ github.ref_name }}"
-          echo '{"version": "${{ github.ref_name }}", "status": "validated"}' > manifest.json
-
-  #Job 2: Desplegar la infraestructura
-  deploy-infrastructure:
-    needs: build-and-test    #Solo corre si el job 1 fue exitoso
+  # JOB 2: GENERAR EL PLAN DE INFRAESTRUCTURA
+  terraform-plan:
+    needs: build-and-test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -62,36 +50,50 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
+      # Guardamos el plan para que el siguiente job lo recupere
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-file
+          path: tfplan
+
+  # JOB 3: DESPLEGAR (ESTO ACTIVA EL BOTÓN DE APROBACIÓN)
+  terraform-apply:
+    needs: terraform-plan
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production  # <--- VÍNCULO CON EL BOTÓN EN SETTINGS
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-file
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Terraform Init
+        run: terraform init
+
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
 
-      - name: Debug File Path
-        run: |
-          echo "Searching for files in the repositorie..."
-          pwd
-          ls -R
-
-      - name: Run Health Check
-        run: |
-          if [ -f src/seat_controller.py ]; then
-            python src/seat_controller.py
-          elif [ -f seat_controller.py ]; then
-            phyton seat_controller.py
-          else
-            echo "Error: seat_controller.py not found on the src"
-            exit 1
-          fi
-
+      # Tus pasos adicionales de reporte (opcionales aquí)
       - name: Upload Incident Report to S3
-        if: always() # Esto asegura que se corra incluso si falla lo anterior
+        if: always()
         run: |
-         # Buscamos el archivo en todo el espacio de trabajo
           REPORT_PATH=$(find . -name "incident_report.json" | head -n 1)
-          
           if [ -n "$REPORT_PATH" ]; then
-            echo "Reporte encontrado en: $REPORT_PATH. Subiendo a S3..."
             aws s3 cp $REPORT_PATH s3://hella-seat-brains-reports-leonardo-arroyo/incidents/$(date +%Y-%m-%d)/incident_report.json
-          else
-            echo "El archivo incident_report.json no existe. ¿El script falló como esperábamos?"
           fi
