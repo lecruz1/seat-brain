@@ -24,7 +24,7 @@ def lambda_handler(event, context):
 
     s3.put_object(
         Bucket=bucket_name,
-        Key=file_name
+        Key=file_name,
         Body=csv_buffer.getvalue()
     )
 
