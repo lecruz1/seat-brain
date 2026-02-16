@@ -23,6 +23,11 @@ provider "aws" {
 
 resource "aws_s3_bucket" "seat_release_bucket" {
   bucket = var.bucket_name
+  
+  tags = {
+    Name        = "Seat Reports Bucket"
+    Environment = var.environment
+  }
 }
 
 # 2. Lifecycle
@@ -126,21 +131,22 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
 
 # Lambda Function
 resource "aws_lambda_function" "reports_lambda" {
-  filename = data.archive_file.lambda_zip.output_path
-  function_name = "seat-incident-generator"
-  role = aws_iam_role.lambda_exec_role.arn
-  handler = "lambda_function.lambda_handler" # Archivo.funcion
-  runtime = "python3.9"
+  filename         = data.archive_file.lambda_zip.output_path
+  function_name    = "${var.project_name}-${var.environment}" 
+  role             = aws_iam_role.lambda_exec_role.arn
+  handler          = "lambda_function.lambda_handler"
+  runtime          = var.python_runtime 
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-
+  
   layers = ["arn:aws:lambda:us-east-2:336392948345:layer:AWSSDKPandas-Python39:20"]
 
-  timeout     = 30   # Change the 3 seconds defect of AWS Lambda
-  memory_size = 256  # Increase de RAM to 256 MB
+  timeout     = 30
+  memory_size = 256
 
   environment {
     variables = {
       BUCKET_NAME = aws_s3_bucket.seat_release_bucket.id
+      ENV         = var.environment
     }
   }
 }

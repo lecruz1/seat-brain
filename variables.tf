@@ -15,3 +15,15 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "project_name" {
+  description = "Nombre base del proyecto"
+  type        = string
+  default     = "seat-incident-generator"
+}
+
+variable "python_runtime" {
+  description = "Runtime de Python para la función Lambda"
+  type        = string
+  default     = "python3.9"
+}
