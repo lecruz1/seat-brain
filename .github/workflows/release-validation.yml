@@ -50,13 +50,13 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      - name: Upload Terraform Assets
+      - name: Upload Terraform Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-assets
+          name: terraform-bundle
           path: |
             tfplan
-            lambda_function.zip
+            lambda_function.zip   # Asegúrate que este nombre sea igual al de tu main.tf
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
@@ -64,7 +64,7 @@ jobs:
           name: tfplan-file
           path: tfplan
 
-  # JOB 3: DESPLEGAR (ESTO ACTIVA EL BOTÓN DE APROBACIÓN)
+# JOB 3: DESPLEGAR (ESTO ACTIVA EL BOTÓN DE APROBACIÓN)
   terraform-apply:
     needs: terraform-plan
     if: github.ref == 'refs/heads/main'
@@ -75,15 +75,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Descargamos el paquete completo (Plan + ZIP) antes de ejecutar Terraform
       - name: Download Terraform Assets
         uses: actions/download-artifact@v4
         with:
           name: terraform-assets
-
-      - name: Download Plan Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan-file
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -98,30 +94,21 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      # Usamos el archivo de plan descargado
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
 
       - name: Terraform Outputs
         run: terraform output
 
-      # Tus pasos adicionales de reporte (opcionales aquí)
+      # Reporte a S3 (Solo si existe el archivo de incidentes)
       - name: Upload Incident Report to S3
         if: always()
         run: |
           REPORT_PATH=$(find . -name "incident_report.json" | head -n 1)
           if [ -n "$REPORT_PATH" ]; then
+            echo "Reporte encontrado: $REPORT_PATH. Subiendo..."
             aws s3 cp $REPORT_PATH s3://hella-seat-brains-reports-leonardo-arroyo/incidents/$(date +%Y-%m-%d)/incident_report.json
+          else
+            echo "No se encontró incident_report.json para subir."
           fi
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-assets
-          path: |
-            tfplan
-            lambda_function.zip  # <--- ASEGÚRATE DE QUE ESTE NOMBRE COINCIDA CON TU MAIN.TF
-
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-assets
