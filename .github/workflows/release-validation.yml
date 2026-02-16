@@ -89,6 +89,9 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
 
+      - name: Terraform Outputs
+        run: terraform output
+
       # Tus pasos adicionales de reporte (opcionales aquí)
       - name: Upload Incident Report to S3
         if: always()
