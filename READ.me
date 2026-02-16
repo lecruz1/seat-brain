@@ -1,0 +1,38 @@
+# 🚗 Seat Brain Release & Incident Reporting System
+
+Este proyecto implementa una arquitectura **Serverless** automatizada para la validación de firmware y generación de reportes de incidentes en asientos inteligentes. Utiliza **Infraestructura como Código (IaC)** para garantizar despliegues consistentes y seguros.
+
+## 🏗️ Arquitectura del Sistema
+
+La solución se basa en los siguientes pilares:
+
+* **Validación de Software:** Scripts en Python que simulan la validación del controlador del asiento.
+* **Procesamiento de Datos:** AWS Lambda con la capa (Layer) de **Pandas** para procesar incidentes y generar archivos CSV.
+* **Almacenamiento:** Amazon S3 con versionamiento para el histórico de reportes.
+* **Automatización:** GitHub Actions para el pipeline de CI/CD.
+* **Gobernanza:** Terraform para la gestión de infraestructura con estado remoto (S3 + DynamoDB).
+
+## 🚀 Pipeline de CI/CD (GitHub Actions)
+
+El flujo de trabajo está diseñado siguiendo las mejores prácticas de DevOps:
+
+1.  **Build & Test:** Validación del código Python y simulación de firmware.
+2.  **Terraform Plan:** Generación de un plan de infraestructura inmutable, guardado como artefacto.
+3.  **Manual Approval:** Gate de seguridad que requiere aprobación humana en GitHub Environments antes de afectar producción.
+4.  **Terraform Apply:** Despliegue automatizado de los recursos en AWS (us-east-2).
+
+## 🛠️ Tecnologías Utilizadas
+
+* **Cloud:** AWS (Lambda, S3, IAM, EventBridge).
+* **IaC:** Terraform (Backend remoto, Variables, Outputs).
+* **Lenguajes:** Python 3.9 (Pandas).
+* **CI/CD:** GitHub Actions (Jobs, Artifacts, Environments).
+
+## 📋 Cómo Ejecutar
+
+1.  **Requisitos:** Tener configurado el secreto de AWS (`AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY`) en el repositorio.
+2.  **Despliegue:** Realizar un `push` a la rama `main`.
+3.  **Aprobación:** Ir a la pestaña "Actions", revisar el Plan y aprobar el despliegue.
+
+---
+*Proyecto desarrollado por Leonardo Arroyo como muestra de implementación de arquitecturas escalables y seguras en la nube.*
