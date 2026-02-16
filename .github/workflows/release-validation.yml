@@ -26,7 +26,7 @@ jobs:
           python src/seat_controller.py
           echo "Validacion completada con éxito."
 
-  # JOB 2: GENERAR EL PLAN DE INFRAESTRUCTURA
+# JOB 2: GENERAR EL PLAN DE INFRAESTRUCTURA
   terraform-plan:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -50,19 +50,14 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      - name: Upload Terraform Bundle
+      # UN SOLO UPLOAD: Empaquetamos todo lo necesario para el Job 3
+      - name: Upload Terraform Assets
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-bundle
+          name: terraform-assets
           path: |
             tfplan
-            lambda_function.zip   # Asegúrate que este nombre sea igual al de tu main.tf
-
-      - name: Upload Plan Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-file
-          path: tfplan
+            lambda_function.zip
 
 # JOB 3: DESPLEGAR (ESTO ACTIVA EL BOTÓN DE APROBACIÓN)
   terraform-apply:
