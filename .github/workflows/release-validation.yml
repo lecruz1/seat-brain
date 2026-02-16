@@ -112,3 +112,16 @@ jobs:
           if [ -n "$REPORT_PATH" ]; then
             aws s3 cp $REPORT_PATH s3://hella-seat-brains-reports-leonardo-arroyo/incidents/$(date +%Y-%m-%d)/incident_report.json
           fi
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-assets
+          path: |
+            tfplan
+            lambda_function.zip  # <--- ASEGÚRATE DE QUE ESTE NOMBRE COINCIDA CON TU MAIN.TF
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-assets

@@ -85,10 +85,10 @@ resource "aws_s3_bucket_versioning" "state_versioning" {
 }
 
 # Automatic ZIP creation
-data "archive_file" "lambda_zip"{
+data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/src"
-  output_path = "${path.module}/lambda_function-zip"
+  output_path = "${path.module}/lambda_function.zip"
 }
 
 # IAM role to Lambda
