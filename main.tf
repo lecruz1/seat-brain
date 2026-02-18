@@ -147,6 +147,42 @@ resource "aws_lambda_function" "reports_lambda" {
     variables = {
       BUCKET_NAME = aws_s3_bucket.seat_release_bucket.id
       ENV         = var.environment
+      SNS_TOPIC_ARN = aws_sns_topic.incident_notifications.arn
     }
   }
+}
+
+# SNS topic creation
+resource "aws_sns_topic" "incident_notifications" {
+  name = "${var.project_name}-notifications"
+}
+
+# Email to recieve updates
+resource "aws_sns_topic_subscription" "user_email_sub" {
+  topic_arn = aws_sns_topic.incident_notifications.arn
+  protocol  = "email"
+  endpoint  = "leo_cruz19@hotmail.com"
+}
+
+# Permission for Lambda to publicy in my SNS
+resource "aws_iam_policy" "lambda_sns_policy" {
+  name        = "${var.project_name}-sns-policy"
+  description = "Permite a la Lambda enviar notificaciones a SNS"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "sns:Publish"
+        Effect   = "Allow"
+        Resource = aws_sns_topic.incident_notifications.arn
+      }
+    ]
+  })
+}
+
+# Lambda policy
+resource "aws_iam_role_policy_attachment" "lambda_sns_attach" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = aws_iam_policy.lambda_sns_policy.arn
 }
