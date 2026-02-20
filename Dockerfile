@@ -1,14 +1,17 @@
 # Usamos la imagen base de AWS para Python
 FROM public.ecr.aws/lambda/python:3.9
 
-# Copiamos el archivo de requerimientos
-COPY requirements.txt ${LAMBDA_TASK_ROOT}
+# Establecemos el directorio de trabajo (donde Lambda busca el código)
+WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Instalamos las librerías (Pandas, etc.)
+# 1. Copiamos el archivo de requerimientos 
+COPY requirements.txt .
+
+# 2. Instalamos las librerías
 RUN pip install -r requirements.txt
 
-# Copiamos el código de la función
-COPY lambda_function.py ${LAMBDA_TASK_ROOT}
+# 3. COPIAMOS EL ARCHIVO DESDE LA CARPETA SRC
+COPY src/lambda_function.py .
 
-# Establecemos el manejador (handler)
+# 4. Establecemos el manejador
 CMD [ "lambda_function.lambda_handler" ]
