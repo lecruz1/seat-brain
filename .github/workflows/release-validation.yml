@@ -30,7 +30,7 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: seat-brain-repository 
+          ECR_REPOSITORY: seat-brain
           IMAGE_TAG: latest # En producción usaríamos ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -103,4 +103,4 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name seat-incident-generator \
-            --image-uri $(aws ecr describe-repositories --repository-names seat-brain-repository --query 'repositories[0].repositoryUri' --output text):latest
+            --image-uri $(aws ecr describe-repositories --repository-names seat-brain --query 'repositories[0].repositoryUri' --output text):latest
