@@ -129,24 +129,26 @@ resource "aws_iam_role_policy" "lambda_s3_policy" {
   })
 }
 
-# Lambda Function
+# Lambda Function usando Container Image
 resource "aws_lambda_function" "reports_lambda" {
-  filename         = data.archive_file.lambda_zip.output_path
-  function_name    = "${var.project_name}-${var.environment}" 
-  role             = aws_iam_role.lambda_exec_role.arn
-  handler          = "lambda_function.lambda_handler"
-  runtime          = var.python_runtime 
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  function_name = "${var.project_name}-${var.environment}" 
+  role          = aws_iam_role.lambda_exec_role.arn
   
-  layers = ["arn:aws:lambda:us-east-2:336392948345:layer:AWSSDKPandas-Python39:20"]
+  # 1. Indicamos que usaremos una imagen de Docker
+  package_type = "Image"
+  
+  # 2. Dirección de la imagen en ECR (usamos la URL del repositorio + el tag)
+  image_uri    = "${aws_ecr_repository.seat_brain_repo.repository_url}:latest"
 
-  timeout     = 30
-  memory_size = 256
+  # 3. Ajustes de capacidad (Pandas en Docker suele requerir un poco más de RAM)
+  timeout     = 60 # Aumentamos a 60s por el tiempo de arranque del contenedor (Cold Start)
+  memory_size = 512 # Recomendado para Pandas dentro de contenedores
 
+  # 4. Variables de entorno (Se mantienen igual)
   environment {
     variables = {
-      BUCKET_NAME = aws_s3_bucket.seat_release_bucket.id
-      ENV         = var.environment
+      BUCKET_NAME   = aws_s3_bucket.seat_release_bucket.id
+      ENV           = var.environment
       SNS_TOPIC_ARN = aws_sns_topic.incident_notifications.arn
     }
   }
@@ -185,4 +187,10 @@ resource "aws_iam_policy" "lambda_sns_policy" {
 resource "aws_iam_role_policy_attachment" "lambda_sns_attach" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = aws_iam_policy.lambda_sns_policy.arn
+}
+
+resource "aws_ecr_repository" "seat_brain_repo" {
+  name                 = "seat-brain-repository"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
 }

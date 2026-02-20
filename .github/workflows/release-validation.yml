@@ -8,27 +8,37 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # JOB 1: VALIDACIÓN DE SOFTWARE
-  build-and-test:
+  # JOB 1: VALIDACIÓN Y BUILD DE DOCKER
+  build-and-push-docker:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del codigo
         uses: actions/checkout@v4
 
-      - name: Configurar Python
-        uses: actions/setup-python@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          python-version: '3.9' # Consistencia con Lambda
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
 
-      - name: Simular validacion de firmware
+      # Login necesario para subir la imagen
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: seat-brain-repository 
+          IMAGE_TAG: latest # En producción usaríamos ${{ github.sha }}
         run: |
-          echo "Iniciando validacion del cerebro del asiento..."
-          python src/seat_controller.py
-          echo "Validacion completada con éxito."
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-# JOB 2: GENERAR EL PLAN DE INFRAESTRUCTURA
+  # JOB 2: GENERAR EL PLAN DE INFRAESTRUCTURA
   terraform-plan:
-    needs: build-and-test
+    needs: build-and-push-docker
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -50,27 +60,23 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      # UN SOLO UPLOAD: Empaquetamos todo lo necesario para el Job 3
-      - name: Upload Terraform Assets
+      - name: Upload Terraform Plan
         uses: actions/upload-artifact@v4
         with:
           name: terraform-assets
-          path: |
-            tfplan
-            lambda_function.zip
+          path: tfplan 
 
-# JOB 3: DESPLEGAR (ESTO ACTIVA EL BOTÓN DE APROBACIÓN)
+  # JOB 3: DESPLEGAR (CON APROBACIÓN MANUAL)
   terraform-apply:
     needs: terraform-plan
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production  # <--- VÍNCULO CON EL BOTÓN EN SETTINGS
+    environment: production
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Descargamos el paquete completo (Plan + ZIP) antes de ejecutar Terraform
       - name: Download Terraform Assets
         uses: actions/download-artifact@v4
         with:
@@ -89,21 +95,12 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # Usamos el archivo de plan descargado
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
 
-      - name: Terraform Outputs
-        run: terraform output
-
-      # Reporte a S3 (Solo si existe el archivo de incidentes)
-      - name: Upload Incident Report to S3
-        if: always()
+      # Forzar la actualización de la Lambda para que use la nueva imagen de ECR
+      - name: Update Lambda Function
         run: |
-          REPORT_PATH=$(find . -name "incident_report.json" | head -n 1)
-          if [ -n "$REPORT_PATH" ]; then
-            echo "Reporte encontrado: $REPORT_PATH. Subiendo..."
-            aws s3 cp $REPORT_PATH s3://hella-seat-brains-reports-leonardo-arroyo/incidents/$(date +%Y-%m-%d)/incident_report.json
-          else
-            echo "No se encontró incident_report.json para subir."
-          fi
+          aws lambda update-function-code \
+            --function-name seat-incident-generator \
+            --image-uri $(aws ecr describe-repositories --repository-names seat-brain-repository --query 'repositories[0].repositoryUri' --output text):latest
