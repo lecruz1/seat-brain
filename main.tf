@@ -190,7 +190,7 @@ resource "aws_iam_role_policy_attachment" "lambda_sns_attach" {
 }
 
 resource "aws_ecr_repository" "seat_brain_repo" {
-  name                 = "seat-brain-repository"
+  name                 = "seat-brain"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 }
