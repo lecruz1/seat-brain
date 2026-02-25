@@ -11,7 +11,7 @@ def lambda_handler(event, context):
     
     # Clientes de AWS
     s3 = boto3.client('s3')
-    sns = boto3.client('sns')
+    sns = boto3.client('sns', region_name='us-east-2')
 
     # 2. Generación de datos simulados
     data = {

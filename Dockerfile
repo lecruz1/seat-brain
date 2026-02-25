@@ -8,10 +8,10 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 COPY requirements.txt .
 
 # 2. Instalamos las librerías
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 3. COPIAMOS EL ARCHIVO DESDE LA CARPETA SRC
-COPY src/lambda_function.py .
+COPY src/lambda_function.py ${LAMBDA_TASK_ROOT}
 
 # 4. Establecemos el manejador
 CMD [ "lambda_function.lambda_handler" ]
