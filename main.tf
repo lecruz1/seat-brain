@@ -21,14 +21,14 @@ provider "aws" {
   region = var.aws_region
 }
 
-resource "aws_s3_bucket" "seat_release_bucket" {
-  bucket = var.bucket_name
+#resource "aws_s3_bucket" "seat_release_bucket" {
+#  bucket = var.bucket_name
   
-  tags = {
-    Name        = "Seat Reports Bucket"
-    Environment = var.environment
-  }
-}
+#  tags = {
+#    Name        = "Seat Reports Bucket"
+#    Environment = var.environment
+#  }
+#}
 
 # 2. Lifecycle
 resource "aws_s3_bucket_lifecycle_configuration" "cleanup_reports" {
