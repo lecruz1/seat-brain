@@ -9,12 +9,12 @@ terraform {
 
   # This connect to GITHUB Actions
   backend "s3" {
-    bucket         = "hella-seat-brains-reports-leonardo-arroyo"
-    key            = "terraform.tfstate"
+    bucket         = "leonardo-arroyo-terraform-state"
+    key            = "proyectos/seat-brain/terraform.tfstate"
     region         = "us-east-2"
     dynamodb_table = "terraform-state-locking"
     encrypt        = true
-  }
+}
 }
 
 provider "aws" {
