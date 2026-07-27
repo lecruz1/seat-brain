@@ -1,26 +1,4 @@
-# 1. Definition of the provider and Backend
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-
-  # This connect to GITHUB Actions
-  backend "s3" {
-    bucket         = "hella-seat-brains-reports-leonardo-arroyo"
-    key            = "proyectos/seat-brain/terraform.tfstate"
-    region         = "us-east-2"
-    dynamodb_table = "terraform-state-locking"
-    encrypt        = true
-}
-}
-
-provider "aws" {
-  region = var.aws_region
-}
-
+# 1. Bucket para release
 resource "aws_s3_bucket" "seat_release_bucket" {
   bucket = var.bucket_name
   
@@ -54,17 +32,6 @@ resource "aws_s3_bucket_public_access_block" "security_policy" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
-}
-
-resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "terraform-state-locking"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
 }
 
 #/import {
@@ -163,7 +130,7 @@ resource "aws_sns_topic" "incident_notifications" {
 resource "aws_sns_topic_subscription" "user_email_sub" {
   topic_arn = aws_sns_topic.incident_notifications.arn
   protocol  = "email"
-  endpoint  = "leo_cruz19@hotmail.com"
+  endpoint  = "leonardo.awstest@gmail.com"
 }
 
 # Permission for Lambda to publicy in my SNS
