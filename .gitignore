@@ -12,4 +12,5 @@
 # Ignorar logs
 *.log
 
+# Ignorar el zip de lambda
 lambda_function.zip
