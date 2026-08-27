@@ -102,5 +102,5 @@ jobs:
       - name: Update Lambda Function
         run: |
           aws lambda update-function-code \
-            --function-name seat-incident-generator \
+            --function-name seat-incident-generator-dev \
             --image-uri $(aws ecr describe-repositories --repository-names seat-brain --query 'repositories[0].repositoryUri' --output text):latest
