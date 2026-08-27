@@ -5,7 +5,7 @@ provider "aws" {
 
 # Bucket de S3 para guardar el state
 resource "aws_s3_bucket" "state_bucket" {
-  bucket = "seat-brain-terraform-state"
+  bucket = "seat-brain-tf-state-leonardo-arroyo"
   force_destroy = false #Evito borrar el bucket si tiene datos
 
   tags = {

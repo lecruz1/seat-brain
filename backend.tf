@@ -11,7 +11,7 @@ terraform {
 
   # 2. Backend S3 completo con seguridad y candado
   backend "s3" {
-    bucket         = "seat-brain-terraform-state"
+    bucket         = "seat-brain-tf-state-leonardo-arroyo"
     key            = "project/seat-brain/terraform.tfstate"
     region         = "us-east-2"
     dynamodb_table = "seat-brain-terraform-locks" # <- El candado contra el ConditionalCheckFailed

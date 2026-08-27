@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "bucket_name" {
   description = "Nombre único del bucket de reportes"
   type        = string
-  default     = "hella-seat-brains-reports-leonardo-arroyo-v2"
+  default     = "seat-brain-reports-leonardo-arroyo-2026"
 }
 
 variable "environment" {
